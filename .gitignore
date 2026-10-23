@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*
+.vscode/
+.idea/
+third_party/
+cache/
+output/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.ply
+*.splat
