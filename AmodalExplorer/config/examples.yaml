@@ -1,0 +1,7 @@
+- name: real_campus_2
+  image_filepath: third_party/WonderWorld/examples/images/real_campus_2.png
+  style_prompt: campus setting DSLR 35mm landscape
+  content_prompt: Historic university building, prominent bell tower, lush green lawn,
+    blue sky
+  negative_prompt: text
+  background: ''

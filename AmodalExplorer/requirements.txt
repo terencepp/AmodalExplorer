@@ -1,0 +1,24 @@
+# Install CUDA PyTorch and PyTorch3D first, following README.md.
+numpy==1.26.4
+transformers==4.37.2
+diffusers==0.24.0
+huggingface-hub==0.24.6
+kornia==0.8.0
+omegaconf
+ipdb
+opencv-python<4.12
+einops
+imageio[ffmpeg]
+plyfile
+scipy
+matplotlib
+scikit-image
+accelerate<1
+spacy==3.7.6
+lpips
+timm==0.6.12
+tyro
+scikit-learn
+av
+easydict==1.13
+mediapy==1.2.2

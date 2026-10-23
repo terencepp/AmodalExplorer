@@ -1,0 +1,38 @@
+# Paths are relative to the release root. The image is provided by WonderWorld.
+runs_dir: output/campus
+example_name: real_campus_2
+examples_yaml: config/examples.yaml
+sky_cache_dir: cache/sky
+seed: 1
+use_gpt: false
+debug: false
+depth_model: marigold
+depth_conditioning: true
+stable_diffusion_checkpoint: sd2-community/stable-diffusion-2-inpainting
+init_focal_length: 960
+fg_depth_range: 0.015
+depth_shift: 0.001
+sky_hard_depth: 0.02
+gen_sky_image: false
+gen_sky: false
+
+# Final paper method: OAP completes every candidate at each recursive level.
+oap:
+  max_layers: 3
+  stop_ratio: 0.005
+  grow_px: 2
+  negative_prompt: tree, plant
+  candidates:
+    min_area: 0.001
+    ring_px: 6
+    rel_gap: 0.1
+    min_far_frac: 0.2
+    min_region_overlap: 0.5
+
+# Each translation is in the current camera's OpenCV frame (right, down, forward),
+# scaled by camera_step_relative * first-keyframe median depth. Positive yaw turns right.
+camera_step_relative: 0.1
+camera_path:
+  - {yaw: 0, translation: [0.3, 0, 0]}
+  - {yaw: 0, translation: [0.3, 0, 0]}
+  - {yaw: 4, translation: [0.15, 0, 0.8]}

@@ -1,0 +1,71 @@
+--- a/models/models.py
++++ b/models/models.py
+@@ -26,7 +26,8 @@
+ from util.midas_utils import dpt_transform, dpt_512_transform
+ from util.utils import functbl, save_depth_map, rotate_pytorch3d_camera, translate_pytorch3d_camera, SimpleLogger, soft_stitching
+ 
+-from util.segment_utils import refine_disp_with_segments_2, save_sam_anns
++from util.segment_utils import save_sam_anns
++from amodalexplorer.lifting import refine_disparity
+ from typing import List, Optional, Tuple, Union
+ from kornia.morphology import erosion
+ from syncdiffusion.syncdiffusion_model import SyncDiffusion
+@@ -1014,9 +1015,9 @@
+             return Image.fromarray(blended_image)
+         
+         imgs = []
+-        gen_layer_0 = (not os.path.exists(f'./examples/sky_images/{example_name}/sky_0.png')) or gen_sky
+-        gen_layer_1 = (not os.path.exists(f'./examples/sky_images/{example_name}/sky_1.png')) or gen_layer_0 or gen_sky
+-        gen_layer_2 = (not os.path.exists(f'./examples/sky_images/{example_name}/sky_2.png')) or gen_layer_1 or gen_sky
++        gen_layer_0 = (not os.path.exists(f'{self.config["sky_cache_dir"]}/{example_name}/sky_0.png')) or gen_sky
++        gen_layer_1 = (not os.path.exists(f'{self.config["sky_cache_dir"]}/{example_name}/sky_1.png')) or gen_layer_0 or gen_sky
++        gen_layer_2 = (not os.path.exists(f'{self.config["sky_cache_dir"]}/{example_name}/sky_2.png')) or gen_layer_1 or gen_sky
+         
+         for layer in range(layers_panorama):
+             if layer == 0:
+@@ -1047,7 +1048,7 @@
+                     mask_image = ToTensor()(mask_).unsqueeze(0).to(self.device)
+                     ToPILImage()(mask_image.float()[0]).save(self.run_dir / f"{layer:02d}_mask_blocky.png")    
+                 else:
+-                    img = Image.open(f'./examples/sky_images/{example_name}/sky_0.png')
++                    img = Image.open(f'{self.config["sky_cache_dir"]}/{example_name}/sky_0.png')
+                     # img.save(self.run_dir / f"{layer:02d}_synced_output.png")
+                     imgs.append(img)
+                     continue
+@@ -1065,7 +1066,7 @@
+                     mask_image = mask_image.to(self.device)
+                     ToPILImage()(mask_image.float()[0]).save(self.run_dir / f"{layer:02d}_mask.png")
+                 else:
+-                    img = Image.open(f'./examples/sky_images/{example_name}/sky_1.png')
++                    img = Image.open(f'{self.config["sky_cache_dir"]}/{example_name}/sky_1.png')
+                     # img.save(self.run_dir / f"{layer:02d}_synced_output.png")
+                     imgs.append(img)
+                     continue
+@@ -1105,7 +1106,7 @@
+                 img = ToPILImage()(new_img_[0])
+                 img.save(self.run_dir / f"{layer:02d}_sky_leftmost.png")
+-            os.makedirs(f'./examples/sky_images/{example_name}', exist_ok=True)
++            os.makedirs(f'{self.config["sky_cache_dir"]}/{example_name}', exist_ok=True)
+-            img.save(f'./examples/sky_images/{example_name}/sky_{layer}.png')
++            img.save(f'{self.config["sky_cache_dir"]}/{example_name}/sky_{layer}.png')
+             imgs.append(img)
+         img = linear_blend(imgs)
+         # img.save(self.run_dir / f"sky_0_1_blend.png")
+@@ -1153,7 +1154,7 @@
+ 
+         # Remove points below the ground height
+         sky_rows_idx = torch.where(mask.any(dim=1))[0]
+-        max_idx = sky_rows_idx.max().item()
++        max_idx = sky_rows_idx.max().item() if sky_rows_idx.numel() else 0
+         ground_threshold = -0.0003 if max_idx <= 255 else -0.003
+         mask_above_ground = new_points_3d[:, 1] >= ground_threshold
+         new_points_3d = new_points_3d[mask_above_ground]
+@@ -1669,7 +1670,7 @@
+         
+         disparity_np = self.disparity_latest.squeeze().cpu().numpy()
+ 
+-        refined_disparity = refine_disp_with_segments_2(disparity_np, sorted_mask, keep_threshold=keep_threshold_disp_range, no_refine_mask=no_refine_mask,
++        refined_disparity = refine_disparity(disparity_np, sorted_mask, focal=float(self.init_focal_length), keep_threshold=keep_threshold_disp_range, no_refine_mask=no_refine_mask,
+                                                         existing_mask=existing_mask, existing_disp=existing_disp)
+ 
+         if save_intermediates:
